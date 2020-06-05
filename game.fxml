@@ -7,14 +7,14 @@
 
 <VBox onKeyPressed="#handle" onKeyReleased="#release" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gameController">
   <children>
-    <AnchorPane fx:id="_field" maxHeight="-1.0" maxWidth="-1.0" onKeyPressed="#handle" prefHeight="-1.0" prefWidth="-1.0" style="-fx-background-color: #100000;" VBox.vgrow="ALWAYS">
+    <AnchorPane fx:id="_field" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#handle" prefHeight="712.0" prefWidth="1045.0" style="-fx-background-color: #100000;" VBox.vgrow="ALWAYS">
          <children>
             <ImageView fx:id="_bullet" fitHeight="16.0" fitWidth="40.0" layoutX="307.0" layoutY="317.0" pickOnBounds="true" preserveRatio="true" visible="false">
                <image>
                   <Image url="@bullet.png" />
                </image>
             </ImageView>
-            <ImageView fx:id="player" fitHeight="34.0" fitWidth="48.0" layoutX="300.0" layoutY="333.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fx:id="player" fitHeight="34.0" fitWidth="48.0" layoutX="502.0" layoutY="628.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@player.png" />
                </image>

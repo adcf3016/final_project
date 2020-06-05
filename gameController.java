@@ -45,12 +45,6 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	private boolean moveUp = false;
 	private boolean moveDown = false;
 	private boolean shooting = false;
-
-	/////////////////////////////////////////////////////////////////
-	final DoubleProperty Velocity = new SimpleDoubleProperty();    
-	final LongProperty lastUpdateTime = new SimpleLongProperty();  
-	//////////////////////////////////////////////////////////////////
-	
 	
 	
 	private void update() {
@@ -148,7 +142,7 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 			ArrayList<ImageView> tBullets = new ArrayList<ImageView>(_bullets);
 			for(var b : tBullets) {
 				b.setLayoutY(b.getLayoutY() - 5);
-				if(b.getLayoutY() > _field.getHeight()) {
+				if(b.getLayoutY() < 0) {
 					_bullets.remove(b);
 					_field.getChildren().remove(b);
 				}
