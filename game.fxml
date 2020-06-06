@@ -9,6 +9,11 @@
   <children>
     <AnchorPane fx:id="_field" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#handle" prefHeight="712.0" prefWidth="1045.0" style="-fx-background-color: #100000;" VBox.vgrow="ALWAYS">
          <children>
+            <ImageView fx:id="_boss" fitHeight="67.0" fitWidth="69.0" layoutX="488.0" layoutY="94.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@boss.png" />
+               </image>
+            </ImageView>
             <ImageView fx:id="_bullet" fitHeight="16.0" fitWidth="40.0" layoutX="307.0" layoutY="317.0" pickOnBounds="true" preserveRatio="true" visible="false">
                <image>
                   <Image url="@bullet.png" />

@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
+import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.LongProperty;
@@ -33,19 +34,38 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	@FXML
 	public ImageView _bullet;
 	@FXML
+	public ImageView _boss;
+	@FXML
 	public AnchorPane _field;
 	
 	LinkedList<ImageView> _bullets = new LinkedList<ImageView>();
 	
-	
 	private double t = 0;
 	private double time = 0;
+	private int boss_hp = 100;
 	private boolean moveLeft = false;
 	private boolean moveRight = false;
 	private boolean moveUp = false;
 	private boolean moveDown = false;
 	private boolean shooting = false;
+	private boolean dead = false;
 	
+	private void checkBossDead() throws IOException {
+		if(boss_hp <= 0) {
+			Parent win = FXMLLoader.load(getClass().getResource("winGame.fxml"));
+			Scene winScene = new Scene(win);
+			Start.currentStage.setScene(winScene);
+		}
+	}
+	
+	private void checkPlayerDead() throws IOException {
+		if(dead) {
+			Parent lose = FXMLLoader.load(getClass().getResource("loseGame.fxml"));
+			Scene loseScene = new Scene(lose);
+			loseScene.getRoot().requestFocus();
+			Start.currentStage.setScene(loseScene);
+		}
+	}
 	
 	private void update() {
 		t += 0.016;
@@ -103,6 +123,20 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 		if(input.getCode() == KeyCode.Z) {
 			shooting = true;
 		}
+		
+		try {
+			checkBossDead();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			checkPlayerDead();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -146,9 +180,21 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 					_bullets.remove(b);
 					_field.getChildren().remove(b);
 				}
+				if(b.getLayoutY() < _boss.getLayoutY() + _boss.getFitHeight() && b.getLayoutY() > _boss.getLayoutY()) {
+					if(b.getLayoutX() < _boss.getLayoutX() + _boss.getFitWidth() - 1 && b.getLayoutX() + b.getFitWidth() + 14> _boss.getLayoutX()) {
+						_bullets.remove(b);
+						_field.getChildren().remove(b);
+						boss_hp -= 1;
+					}
+				}
 			}
 		}));
 		fps.setCycleCount(Timeline.INDEFINITE);
 		fps.play();
+		
+		/*PathTransition transition = new PathTransition();//施工
+		transition.setNode(_bullet);
+		transition.setDuration(Duration.millis(2000));
+		transition.setPath(null);//施工*/
 	}
 }
