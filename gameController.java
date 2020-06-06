@@ -14,7 +14,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
-/////////////////////////////////////////////////////////////////////
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -37,27 +36,42 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	public ImageView _boss;
 	@FXML
 	public AnchorPane _field;
+	@FXML
+	public Label _bossHp;
 	
 	LinkedList<ImageView> _bullets = new LinkedList<ImageView>();
+	//boss子彈  =>  地獄的開始
 	
 	private double t = 0;
 	private double time = 0;
+	private double timer = 0;
+	private double boss_x;
+	private double boss_y;
+	private double x_bound;
+	private double y_bound;
+	
 	private int boss_hp = 100;
+	
 	private boolean moveLeft = false;
 	private boolean moveRight = false;
 	private boolean moveUp = false;
 	private boolean moveDown = false;
 	private boolean shooting = false;
 	private boolean dead = false;
+	private boolean bossCanBeShot = true;
+	private boolean randomOrNot = false;
 	
+	//boss死爽沒
 	private void checkBossDead() throws IOException {
 		if(boss_hp <= 0) {
 			Parent win = FXMLLoader.load(getClass().getResource("winGame.fxml"));
 			Scene winScene = new Scene(win);
+			winScene.getRoot().requestFocus();
 			Start.currentStage.setScene(winScene);
 		}
 	}
 	
+	//玩家死爽沒
 	private void checkPlayerDead() throws IOException {
 		if(dead) {
 			Parent lose = FXMLLoader.load(getClass().getResource("loseGame.fxml"));
@@ -67,8 +81,38 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 		}
 	}
 	
+	//boss閃現
+	private void bossMovement() {
+		x_bound = _field.getWidth();
+		y_bound = _field.getHeight() / 2;
+		if(timer < 5) {
+			bossCanBeShot = false;
+			_boss.setOpacity(_boss.getOpacity() - 0.05);
+			if(_boss.getOpacity() < 0) {
+				_boss.setOpacity(0);
+			}
+			if(timer > 4 && !randomOrNot) {
+				boss_x = Math.random() * (x_bound + 1);
+				boss_y = Math.random() * (y_bound + 1);
+				_boss.setLayoutX(boss_x);
+				_boss.setLayoutY(boss_y);
+				randomOrNot = true;
+			}
+		}
+		if(timer > 5 && timer < 10) {
+			bossCanBeShot = true;
+			_boss.setOpacity(_boss.getOpacity() + 0.05);
+			if(_boss.getOpacity() > 1) {
+				_boss.setOpacity(1);
+			}
+			randomOrNot = false;
+		}
+}
+	
+	//條件判斷場所
 	private void update() {
 		t += 0.016;
+		timer += 0.025;
 		if(time > 1) {
 			time = 0;
 		}
@@ -102,9 +146,13 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 		if(t > 1) {
 			t = 0;
 		}
+		if(timer > 12) {
+			timer = 0;
+		}
 		time += 0.25;
 	}
 	
+	//玩家操作
 	@Override
 	public void handle(KeyEvent input) {
 		// TODO Auto-generated method stub
@@ -122,20 +170,6 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 		}
 		if(input.getCode() == KeyCode.Z) {
 			shooting = true;
-		}
-		
-		try {
-			checkBossDead();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try {
-			checkPlayerDead();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 	
@@ -160,7 +194,7 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	}
 
 
-
+	//初始化
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		// TODO Auto-generated method stub
@@ -180,17 +214,42 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 					_bullets.remove(b);
 					_field.getChildren().remove(b);
 				}
-				if(b.getLayoutY() < _boss.getLayoutY() + _boss.getFitHeight() && b.getLayoutY() > _boss.getLayoutY()) {
+				if(bossCanBeShot && b.getLayoutY() < _boss.getLayoutY() + _boss.getFitHeight() && b.getLayoutY() > _boss.getLayoutY()) {
 					if(b.getLayoutX() < _boss.getLayoutX() + _boss.getFitWidth() - 1 && b.getLayoutX() + b.getFitWidth() + 14> _boss.getLayoutX()) {
 						_bullets.remove(b);
 						_field.getChildren().remove(b);
 						boss_hp -= 1;
+						if(boss_hp < 0) {
+							boss_hp = 0;
+						}
+						String output = "Boss Hp:";				//這裡非常危險
+						for(int i = 0; i < boss_hp; i++) {
+							output += "=";
+						}
+						_bossHp.setText(output);
 					}
 				}
+			}
+			
+			bossMovement();
+			
+			try {
+				checkBossDead();
+			} catch (IOException x) {
+				// TODO Auto-generated catch block
+				x.printStackTrace();
+			}
+			
+			try {
+				checkPlayerDead();
+			} catch (IOException x) {
+				// TODO Auto-generated catch block
+				x.printStackTrace();
 			}
 		}));
 		fps.setCycleCount(Timeline.INDEFINITE);
 		fps.play();
+		
 		
 		/*PathTransition transition = new PathTransition();//施工
 		transition.setNode(_bullet);
