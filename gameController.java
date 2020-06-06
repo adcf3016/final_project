@@ -35,11 +35,19 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	@FXML
 	public ImageView _boss;
 	@FXML
+	public ImageView _bossBullet1;
+	@FXML
 	public AnchorPane _field;
 	@FXML
 	public Label _bossHp;
 	
+    private ArrayList<Double> rad = new ArrayList<Double>();
+    private ArrayList<Double> dx = new ArrayList<Double>();
+    private ArrayList<Double> dy = new ArrayList<Double>();
+	
 	LinkedList<ImageView> _bullets = new LinkedList<ImageView>();
+	LinkedList<ImageView> boss_bullets1 = new LinkedList<ImageView>();
+	LinkedList<ImageView> boss_bullets2 = new LinkedList<ImageView>();
 	//boss子彈  =>  地獄的開始
 	
 	private double t = 0;
@@ -51,6 +59,7 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	private double y_bound;
 	
 	private int boss_hp = 100;
+	private int attakMod = 0;
 	
 	private boolean moveLeft = false;
 	private boolean moveRight = false;
@@ -71,13 +80,58 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 		}
 	}
 	
+	//算兩者距離方法
+	private double distance(ImageView boss_bullet, ImageView target) {
+		double bullet_x = boss_bullet.getLayoutX() + boss_bullet.getFitWidth() / 2;
+		double bullet_y = boss_bullet.getLayoutY() + boss_bullet.getFitHeight() / 2;
+		double player_x = target.getLayoutX() + target.getFitWidth() / 2;
+		double player_y = target.getLayoutY() + target.getFitHeight() / 2;
+		double tmp = Math.sqrt(Math.pow(player_x - bullet_x, 2) + Math.pow(player_y - bullet_y, 2));
+		return tmp;
+	}
+	
 	//玩家死爽沒
 	private void checkPlayerDead() throws IOException {
 		if(dead) {
 			Parent lose = FXMLLoader.load(getClass().getResource("loseGame.fxml"));
 			Scene loseScene = new Scene(lose);
-			loseScene.getRoot().requestFocus();
 			Start.currentStage.setScene(loseScene);
+		}
+	}
+	
+	
+	//持續施工中
+	private void bossAttak() {
+		switch(attakMod) {
+		case 1:
+			if(time == 1 && timer <= 8 ) {
+				for(int j = 0; j < 1; ++j) {
+					for(int i = 0; i < 32; ++i) {
+						double degree = (Math.PI / 16) * i;
+						ImageView new_bossbullet = new ImageView(_bossBullet1.getImage());
+						new_bossbullet.setLayoutX(_boss.getLayoutX() + _boss.getFitWidth() / 2 + Math.cos(degree) * _boss.getFitWidth());
+						new_bossbullet.setLayoutY(_boss.getLayoutY() + _boss.getFitHeight() / 2 + Math.sin(degree) * _boss.getFitHeight());
+						_field.getChildren().add(new_bossbullet);
+						rad.add(degree);
+						boss_bullets1.push(new_bossbullet);
+					}
+				}
+				
+			}
+			break;
+		case 2:
+			if(time == 1) {
+				ImageView new_bossbullet_type2 = new ImageView(_bossBullet1.getImage());
+				new_bossbullet_type2.setLayoutX(_boss.getLayoutX() + _boss.getFitWidth() / 2);
+				new_bossbullet_type2.setLayoutY(_boss.getLayoutY() + _boss.getFitHeight());
+				double _x = (player.getLayoutX() + player.getFitWidth() / 2 - new_bossbullet_type2.getLayoutX()) / distance(new_bossbullet_type2, player);
+				double _y = (player.getLayoutY() + player.getFitHeight() / 2 - new_bossbullet_type2.getLayoutY()) / distance(new_bossbullet_type2, player);
+				_field.getChildren().add(new_bossbullet_type2);
+				dx.add(_x);
+				dy.add(_y);
+				boss_bullets2.push(new_bossbullet_type2);
+			}
+			break;
 		}
 	}
 	
@@ -105,7 +159,11 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 			if(_boss.getOpacity() > 1) {
 				_boss.setOpacity(1);
 			}
+			bossAttak();
 			randomOrNot = false;
+		}
+		if(boss_hp < 50) {
+			attakMod = 1;
 		}
 }
 	
@@ -113,6 +171,44 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	private void update() {
 		t += 0.016;
 		timer += 0.025;
+		
+		//彈幕區
+		ArrayList<ImageView> t1_bullets = new ArrayList<ImageView>(boss_bullets1);
+		int index = 0;
+		for(var b : t1_bullets) {
+			b.setLayoutX(b.getLayoutX() + 5 * Math.cos(rad.get(index)));
+			b.setLayoutY(b.getLayoutY() - 5 * Math.sin(rad.get(index)));
+			++index;
+		}
+		//不會寫消除啦
+		
+		ArrayList<ImageView> t2_bullets = new ArrayList<ImageView>(boss_bullets2);
+		int index_2 = 0;
+		for(var c : t2_bullets) {
+			c.setLayoutX(c.getLayoutX() + dx.get(index_2) * 5);
+			c.setLayoutY(c.getLayoutY() + dy.get(index_2) * 5);
+			if(c.getLayoutX() < 0 || c.getLayoutX() > _field.getWidth() + 10 || c.getLayoutY() < 0 || c.getLayoutY() > _field.getHeight() + 10) {
+				boss_bullets2.remove(c);
+				_field.getChildren().remove(c);
+			}
+			index_2++;
+		}
+		
+		
+		//死亡判定
+		for(var b : t1_bullets) {
+			if(distance(b, player) < player.getFitWidth() / 2) {
+				dead = true;
+			}
+		}
+		for(var c : t2_bullets) {
+			if(distance(c, player) < player.getFitWidth() / 2) {
+				dead = true;
+			}
+		}
+		
+		
+		
 		if(time > 1) {
 			time = 0;
 		}
@@ -198,6 +294,7 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		// TODO Auto-generated method stub
+		attakMod = 2;
 		final AnimationTimer playerAnimation = new AnimationTimer() {
 			@Override
 			public void handle(long timestamp) {
@@ -214,6 +311,7 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 					_bullets.remove(b);
 					_field.getChildren().remove(b);
 				}
+				
 				if(bossCanBeShot && b.getLayoutY() < _boss.getLayoutY() + _boss.getFitHeight() && b.getLayoutY() > _boss.getLayoutY()) {
 					if(b.getLayoutX() < _boss.getLayoutX() + _boss.getFitWidth() - 1 && b.getLayoutX() + b.getFitWidth() + 14> _boss.getLayoutX()) {
 						_bullets.remove(b);

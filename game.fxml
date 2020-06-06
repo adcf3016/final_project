@@ -21,7 +21,12 @@
                   <Font size="13.0" />
                </font>
             </Label>
-            <ImageView fx:id="_boss" fitHeight="67.0" fitWidth="69.0" layoutX="488.0" layoutY="82.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fx:id="_bossBullet1" fitHeight="16.0" fitWidth="26.0" layoutX="513.0" layoutY="163.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@boss_bullet1.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="_boss" fitHeight="67.0" fitWidth="69.0" layoutX="488.0" layoutY="82.0" pickOnBounds="true" preserveRatio="true" style="-fx-opacity: 1;">
                <image>
                   <Image url="@boss.png" />
                </image>
@@ -31,7 +36,7 @@
                   <Image url="@bullet.png" />
                </image>
             </ImageView>
-            <ImageView fx:id="player" fitHeight="34.0" fitWidth="48.0" layoutX="502.0" layoutY="628.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fx:id="player" fitHeight="34.0" fitWidth="48.0" layoutX="503.0" layoutY="603.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@player.png" />
                </image>

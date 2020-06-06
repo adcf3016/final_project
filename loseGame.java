@@ -1,14 +1,10 @@
-import javafx.event.EventHandler;
-import javafx.scene.input.KeyEvent;
+import javafx.fxml.FXML;
 
-public class loseGame implements EventHandler<KeyEvent> {
+public class loseGame{
 
-	@Override
-	public void handle(KeyEvent input) {
-		// TODO Auto-generated method stub
-		if(input.getCode() != null) {
+	@FXML
+	public void onExitPressed(){
 			Start.currentStage.close();
-		}
 	}
 
 }
