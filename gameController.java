@@ -3,17 +3,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
-import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.LongProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleLongProperty;
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -26,6 +20,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
+
+
 
 public class gameController implements EventHandler<KeyEvent>, Initializable{
 	@FXML
@@ -41,23 +37,24 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	@FXML
 	public Label _bossHp;
 	
-    private ArrayList<Double> rad = new ArrayList<Double>();
-    private ArrayList<Double> dx = new ArrayList<Double>();
-    private ArrayList<Double> dy = new ArrayList<Double>();
-	
+    LinkedList<Bullet_1> boss_bullets1 = new LinkedList<Bullet_1>();    //type1子彈
+    LinkedList<Bullet_2> boss_bullets2 = new LinkedList<Bullet_2>();	//type2子彈
+    LinkedList<Bullet_1> boss_bullets3 = new LinkedList<Bullet_1>();	//type3子彈
+    LinkedList<Bullet_1> boss_bullets4 = new LinkedList<Bullet_1>();	//type4子彈
 	LinkedList<ImageView> _bullets = new LinkedList<ImageView>();
-	LinkedList<ImageView> boss_bullets1 = new LinkedList<ImageView>();
-	LinkedList<ImageView> boss_bullets2 = new LinkedList<ImageView>();
 	//boss子彈  =>  地獄的開始
 	
 	private double t = 0;
 	private double time = 0;
 	private double timer = 0;
+	private double atkTime = 0;
 	private double boss_x;
 	private double boss_y;
 	private double x_bound;
 	private double y_bound;
+	private double atkTime1 = 0;
 	
+	private int spr = 0;
 	private int boss_hp = 100;
 	private int attakMod = 0;
 	
@@ -69,6 +66,7 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	private boolean dead = false;
 	private boolean bossCanBeShot = true;
 	private boolean randomOrNot = false;
+	private boolean change = true;
 	
 	//boss死爽沒
 	private void checkBossDead() throws IOException {
@@ -104,32 +102,55 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	private void bossAttak() {
 		switch(attakMod) {
 		case 1:
-			if(time == 1 && timer <= 8 ) {
-				for(int j = 0; j < 1; ++j) {
-					for(int i = 0; i < 32; ++i) {
-						double degree = (Math.PI / 16) * i;
-						ImageView new_bossbullet = new ImageView(_bossBullet1.getImage());
-						new_bossbullet.setLayoutX(_boss.getLayoutX() + _boss.getFitWidth() / 2 + Math.cos(degree) * _boss.getFitWidth());
-						new_bossbullet.setLayoutY(_boss.getLayoutY() + _boss.getFitHeight() / 2 + Math.sin(degree) * _boss.getFitHeight());
-						_field.getChildren().add(new_bossbullet);
-						rad.add(degree);
-						boss_bullets1.push(new_bossbullet);
-					}
+			if(atkTime1 == 1.5 && timer <= 8 ) {
+				for(int i = 0; i < 32; ++i) {
+					double degree = (Math.PI / 16) * i;
+					ImageView new_bossbullet = new ImageView(_bossBullet1.getImage());
+					new_bossbullet.setLayoutX(_boss.getLayoutX() + _boss.getFitWidth() / 2 + Math.cos(degree) * _boss.getFitWidth());
+					new_bossbullet.setLayoutY(_boss.getLayoutY() + _boss.getFitHeight() / 2 + Math.sin(degree) * _boss.getFitHeight());
+					_field.getChildren().add(new_bossbullet);
+					Bullet_1 new_b1 = new Bullet_1(new_bossbullet, degree);
+					boss_bullets1.push(new_b1);
 				}
-				
 			}
 			break;
 		case 2:
-			if(time == 1) {
+			if(atkTime1 == 2 && timer <= 8 ) {
+				for(int i = 0; i < 32; ++i) {
+					double degree = (Math.PI / 16) * i;
+					ImageView new_bossbullet = new ImageView(_bossBullet1.getImage());
+					new_bossbullet.setLayoutX(_boss.getLayoutX() + _boss.getFitWidth() / 2 + Math.cos(degree) * _boss.getFitWidth());
+					new_bossbullet.setLayoutY(_boss.getLayoutY() + _boss.getFitHeight() / 2 + Math.sin(degree) * _boss.getFitHeight());
+					_field.getChildren().add(new_bossbullet);
+					Bullet_1 new_b4 = new Bullet_1(new_bossbullet, degree);
+					boss_bullets4.push(new_b4);
+				}
+			}
+			break;
+		case 3:
+			if(atkTime1 == 1 && timer <= 10) {
+				for(int i = 0; i < 24; i++) {
+					double degree = (Math.PI / 12) * (i + spr * 1.17);
+					ImageView new_bossbullet = new ImageView(_bossBullet1.getImage());
+					new_bossbullet.setLayoutX(_boss.getLayoutX() + _boss.getFitWidth() / 2 + Math.cos(degree) * _boss.getFitWidth());
+					new_bossbullet.setLayoutY(_boss.getLayoutY() + _boss.getFitHeight() / 2 + Math.sin(degree) * _boss.getFitHeight());
+					_field.getChildren().add(new_bossbullet);
+					Bullet_1 new_b3 = new Bullet_1(new_bossbullet, degree);
+					boss_bullets3.push(new_b3);
+				}
+				spr++;
+			}
+			break;
+		case 4:
+			if(atkTime ==  0 ) {
 				ImageView new_bossbullet_type2 = new ImageView(_bossBullet1.getImage());
 				new_bossbullet_type2.setLayoutX(_boss.getLayoutX() + _boss.getFitWidth() / 2);
 				new_bossbullet_type2.setLayoutY(_boss.getLayoutY() + _boss.getFitHeight());
 				double _x = (player.getLayoutX() + player.getFitWidth() / 2 - new_bossbullet_type2.getLayoutX()) / distance(new_bossbullet_type2, player);
 				double _y = (player.getLayoutY() + player.getFitHeight() / 2 - new_bossbullet_type2.getLayoutY()) / distance(new_bossbullet_type2, player);
 				_field.getChildren().add(new_bossbullet_type2);
-				dx.add(_x);
-				dy.add(_y);
-				boss_bullets2.push(new_bossbullet_type2);
+				Bullet_2 new_Bullet_2 = new Bullet_2(new_bossbullet_type2, _x, _y);
+				boss_bullets2.push(new_Bullet_2);
 			}
 			break;
 		}
@@ -137,23 +158,27 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	
 	//boss閃現
 	private void bossMovement() {
+		
 		x_bound = _field.getWidth();
 		y_bound = _field.getHeight() / 2;
-		if(timer < 5) {
+		if(timer < 3) {
 			bossCanBeShot = false;
 			_boss.setOpacity(_boss.getOpacity() - 0.05);
 			if(_boss.getOpacity() < 0) {
 				_boss.setOpacity(0);
 			}
-			if(timer > 4 && !randomOrNot) {
+			if(timer > 2 && !randomOrNot) {
 				boss_x = Math.random() * (x_bound + 1);
 				boss_y = Math.random() * (y_bound + 1);
 				_boss.setLayoutX(boss_x);
 				_boss.setLayoutY(boss_y);
 				randomOrNot = true;
 			}
+			if(!change) {
+				change = true;
+			}
 		}
-		if(timer > 5 && timer < 10) {
+		if(timer > 3 && timer < 10) {
 			bossCanBeShot = true;
 			_boss.setOpacity(_boss.getOpacity() + 0.05);
 			if(_boss.getOpacity() > 1) {
@@ -162,56 +187,96 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 			bossAttak();
 			randomOrNot = false;
 		}
-		if(boss_hp < 50) {
-			attakMod = 1;
+		if(boss_hp < 50 && change) {
+			attakMod = ThreadLocalRandom.current().nextInt(1, 4);
+			change = false;
 		}
 }
 	
 	//條件判斷場所
 	private void update() {
+		//計時區
 		t += 0.016;
+		time += 0.25;
 		timer += 0.025;
+		atkTime += 0.25;
+		atkTime1 += 0.25;
 		
 		//彈幕區
-		ArrayList<ImageView> t1_bullets = new ArrayList<ImageView>(boss_bullets1);
-		int index = 0;
+		ArrayList<Bullet_1> t1_bullets = new ArrayList<Bullet_1>(boss_bullets1);
 		for(var b : t1_bullets) {
-			b.setLayoutX(b.getLayoutX() + 5 * Math.cos(rad.get(index)));
-			b.setLayoutY(b.getLayoutY() - 5 * Math.sin(rad.get(index)));
-			++index;
-		}
-		//不會寫消除啦
-		
-		ArrayList<ImageView> t2_bullets = new ArrayList<ImageView>(boss_bullets2);
-		int index_2 = 0;
-		for(var c : t2_bullets) {
-			c.setLayoutX(c.getLayoutX() + dx.get(index_2) * 5);
-			c.setLayoutY(c.getLayoutY() + dy.get(index_2) * 5);
-			if(c.getLayoutX() < 0 || c.getLayoutX() > _field.getWidth() + 10 || c.getLayoutY() < 0 || c.getLayoutY() > _field.getHeight() + 10) {
-				boss_bullets2.remove(c);
-				_field.getChildren().remove(c);
+			b.get_bullet().setLayoutX(b.get_bullet().getLayoutX() + 5 * Math.cos(b.get_rad()));
+			b.get_bullet().setLayoutY(b.get_bullet().getLayoutY() + 5 * Math.sin(b.get_rad()));
+			double x_check_1 = b.get_bullet().getLayoutX() + b.get_bullet().getFitWidth() / 2;
+			double y_check_1 = b.get_bullet().getLayoutY() + b.get_bullet().getFitHeight() / 2;
+			if(x_check_1 < 0 || y_check_1 < 0 || x_check_1 > _field.getWidth() || y_check_1 > _field.getHeight()) {
+				boss_bullets1.remove(b);
+				_field.getChildren().remove(b.get_bullet());
 			}
-			index_2++;
+		}
+		
+		ArrayList<Bullet_2> t2_bullets = new ArrayList<Bullet_2>(boss_bullets2);
+		for(var c : t2_bullets) {
+			c.get_bullet().setLayoutX(c.get_bullet().getLayoutX() + c.get_x_v() * 7);
+			c.get_bullet().setLayoutY(c.get_bullet().getLayoutY() + c.get_y_v() * 7);
+			if(c.get_bullet().getLayoutX() < 0 || c.get_bullet().getLayoutX() > _field.getWidth() + 10 || c.get_bullet().getLayoutY() < 0 || c.get_bullet().getLayoutY() > _field.getHeight() + 10) {
+				boss_bullets2.remove(c);
+				_field.getChildren().remove(c.get_bullet());
+			}
+		}
+		
+		ArrayList<Bullet_1> t3_bullets = new ArrayList<Bullet_1>(boss_bullets3);
+		for(var d : t3_bullets) {
+			d.get_bullet().setLayoutX(d.get_bullet().getLayoutX() + 5 * Math.cos(d.get_rad()));
+			d.get_bullet().setLayoutY(d.get_bullet().getLayoutY() + 5 * Math.sin(d.get_rad()));
+			double x_check_1 = d.get_bullet().getLayoutX() + d.get_bullet().getFitWidth() / 2;
+			double y_check_1 = d.get_bullet().getLayoutY() + d.get_bullet().getFitHeight() / 2;
+			if(x_check_1 < 0 || y_check_1 < 0 || x_check_1 > _field.getWidth() || y_check_1 > _field.getHeight()) {
+				boss_bullets1.remove(d);
+				_field.getChildren().remove(d.get_bullet());
+			}
+		}
+		
+		ArrayList<Bullet_1> t4_bullets = new ArrayList<Bullet_1>(boss_bullets4);
+		for(var b : t4_bullets) {
+			b.get_bullet().setLayoutX(b.get_bullet().getLayoutX() + 5 * Math.cos(b.get_rad()));
+			b.get_bullet().setLayoutY(b.get_bullet().getLayoutY() - 5 * Math.sin(b.get_rad()));
+			double x_check_1 = b.get_bullet().getLayoutX() + b.get_bullet().getFitWidth() / 2;
+			double y_check_1 = b.get_bullet().getLayoutY() + b.get_bullet().getFitHeight() / 2;
+			if(x_check_1 < 0 || y_check_1 < 0 || x_check_1 > _field.getWidth() || y_check_1 > _field.getHeight()) {
+				boss_bullets1.remove(b);
+				_field.getChildren().remove(b.get_bullet());
+			}
 		}
 		
 		
 		//死亡判定
 		for(var b : t1_bullets) {
-			if(distance(b, player) < player.getFitWidth() / 2) {
+			if(distance(b.get_bullet(), player) < player.getFitWidth() / 5) {
 				dead = true;
 			}
 		}
+		
 		for(var c : t2_bullets) {
-			if(distance(c, player) < player.getFitWidth() / 2) {
+			if(distance(c.get_bullet(), player) < player.getFitWidth() / 5) {
+				dead = true;
+			}
+		}
+		
+		for(var d : t3_bullets) {
+			if(distance(d.get_bullet(), player) < player.getFitWidth() / 5) {
+				dead = true;
+			}
+		}
+		
+		for(var b : t4_bullets) {
+			if(distance(b.get_bullet(), player) < player.getFitWidth() / 5) {
 				dead = true;
 			}
 		}
 		
 		
-		
-		if(time > 1) {
-			time = 0;
-		}
+		//操作區
 		if(moveUp) {
 			if(player.getLayoutY() - 5 > 0) {
 				player.setLayoutY(player.getLayoutY() - 5);
@@ -232,20 +297,30 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 				player.setLayoutX(player.getLayoutX() + 5);
 			}
 		}
-		if(shooting && time == 0) {
+		if(shooting && time == 1) {
 			ImageView newBullet = new ImageView(_bullet.getImage());
 			newBullet.setLayoutX(player.getLayoutX() + player.getFitWidth() / 2 - _bullet.getFitWidth() / 2);
 			newBullet.setLayoutY(player.getLayoutY() - player.getFitHeight()/2);
 			_bullets.push(newBullet);
 			_field.getChildren().add(newBullet);
 		}
+		
+		//重設時間區
 		if(t > 1) {
 			t = 0;
 		}
 		if(timer > 12) {
 			timer = 0;
 		}
-		time += 0.25;
+		if(atkTime > 1.5) {
+			atkTime = 0;
+		}
+		if(time > 1) {
+			time = 0;
+		}
+		if(atkTime1 > 3) {
+			atkTime1 = 0;
+		}
 	}
 	
 	//玩家操作
@@ -294,7 +369,7 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		// TODO Auto-generated method stub
-		attakMod = 2;
+		attakMod = 4;
 		final AnimationTimer playerAnimation = new AnimationTimer() {
 			@Override
 			public void handle(long timestamp) {
@@ -320,10 +395,9 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 						if(boss_hp < 0) {
 							boss_hp = 0;
 						}
-						String output = "Boss Hp:";				//這裡非常危險
-						for(int i = 0; i < boss_hp; i++) {
-							output += "=";
-						}
+						String output = "Boss Hp:";				
+						String repeated = "=".repeat(boss_hp);
+						output += repeated;
 						_bossHp.setText(output);
 					}
 				}
