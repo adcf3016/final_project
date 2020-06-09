@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -146,8 +147,8 @@ public class gameController implements EventHandler<KeyEvent>, Initializable{
 				ImageView new_bossbullet_type2 = new ImageView(_bossBullet1.getImage());
 				new_bossbullet_type2.setLayoutX(_boss.getLayoutX() + _boss.getFitWidth() / 2);
 				new_bossbullet_type2.setLayoutY(_boss.getLayoutY() + _boss.getFitHeight());
-				double _x = (player.getLayoutX() + player.getFitWidth() / 2 - new_bossbullet_type2.getLayoutX()) / distance(new_bossbullet_type2, player);
-				double _y = (player.getLayoutY() + player.getFitHeight() / 2 - new_bossbullet_type2.getLayoutY()) / distance(new_bossbullet_type2, player);
+				double _x = ((player.getLayoutX() + player.getFitWidth() / 2 - new_bossbullet_type2.getLayoutX()) * ThreadLocalRandom.current().nextDouble(0.8, 1.25)) / distance(new_bossbullet_type2, player);
+				double _y = ((player.getLayoutY() + player.getFitHeight() / 2 - new_bossbullet_type2.getLayoutY()) * ThreadLocalRandom.current().nextDouble(0.8 , 1.25))/ distance(new_bossbullet_type2, player);
 				_field.getChildren().add(new_bossbullet_type2);
 				Bullet_2 new_Bullet_2 = new Bullet_2(new_bossbullet_type2, _x, _y);
 				boss_bullets2.push(new_Bullet_2);
